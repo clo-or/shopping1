@@ -158,7 +158,7 @@ def main():
         
         # Monthly Revenue Trend
         st.subheader("📊 월별 매출 트렌드")
-        monthly_rev = transactions.set_index('t_dat')['price'].resample('M').sum().reset_index()
+        monthly_rev = transactions.set_index('t_dat')['price'].resample('ME').sum().reset_index()
         fig_rev = px.line(monthly_rev, x='t_dat', y='price', title="Monthly Revenue Trend", template="plotly_dark")
         st.plotly_chart(fig_rev, use_container_width=True)
 
