@@ -24,44 +24,44 @@ st.markdown("""
     }
     
     .stApp {
-        background: radial-gradient(circle at 50% 50%, #121212 0%, #050505 100%);
-        color: #E0E0E0;
+        background: #FDFDFD;
+        color: #1A1C23;
     }
     
     /* Side Bar Customization */
     [data-testid="stSidebar"] {
-        background-color: rgba(15, 15, 15, 0.8);
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        background-color: #FFFFFF;
+        border-right: 1px solid #EEEEEE;
     }
     
     /* Metric Card Styling */
     div[data-testid="stMetricValue"] {
         font-size: 2.2rem !important;
         font-weight: 800 !important;
-        color: #FFFFFF !important;
-        background: -webkit-linear-gradient(#00C9FF, #92FE9D);
+        color: #1A1C23 !important;
+        background: linear-gradient(45deg, #4F46E5, #06B6D4);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
     
     .stMetric {
-        background: rgba(255, 255, 255, 0.03);
+        background: #FFFFFF;
         padding: 24px;
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        transition: transform 0.3s ease;
+        border: 1px solid #F0F0F0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
     }
     
     .stMetric:hover {
         transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(0, 201, 255, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #E0E7FF;
     }
     
     /* Button Aesthetics */
     .stButton>button {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
         color: white;
         border: none;
         padding: 0.8rem 2rem;
@@ -69,13 +69,13 @@ st.markdown("""
         font-weight: 600;
         letter-spacing: 0.5px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
         width: 100%;
     }
     
     .stButton>button:hover {
         transform: scale(1.02);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
     }
     
     /* Tab Styling */
@@ -87,20 +87,19 @@ st.markdown("""
         height: 50px;
         white-space: pre-wrap;
         background-color: transparent !important;
-        border-radius: 4px 4px 0px 0px;
-        color: #888;
+        color: #6B7280;
         font-weight: 400;
     }
     
     .stTabs [aria-selected="true"] {
-        color: #FFFFFF !important;
+        color: #4F46E5 !important;
         font-weight: 600 !important;
-        border-bottom: 2px solid #6366f1 !important;
+        border-bottom: 2px solid #4F46E5 !important;
     }
     
-    /* Plotly background */
-    .main-svg {
-        background: transparent !important;
+    h1, h2, h3 {
+        color: #111827;
+        font-weight: 800;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -129,15 +128,11 @@ def load_and_preprocess():
 def run_rfm_analysis(df):
     snapshot_date = df['t_dat'].max() + pd.Timedelta(days=1)
     
-    rfm = df.groupby('customer_id').agg({
-        't_dat': lambda x: (snapshot_date - x.max()).days,
-        'customer_id': 'count',
-        'price': 'sum'
-    }).rename(columns={
-        't_dat': 'Recency',
-        'customer_id': 'Frequency',
-        'price': 'Monetary'
-    })
+    rfm = df.groupby('customer_id').agg(
+        Recency=('t_dat', lambda x: (snapshot_date - x.max()).days),
+        Frequency=('customer_id', 'count'),
+        Monetary=('price', 'sum')
+    )
     
     # 5-level scoring
     rfm['R'] = pd.qcut(rfm['Recency'].rank(method='first'), 5, labels=[5, 4, 3, 2, 1])
@@ -161,8 +156,8 @@ def run_rfm_analysis(df):
 def main():
     # Sidebar
     with st.sidebar:
-        st.markdown("<h1 style='text-align: center; color: white;'>NEBULA</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #888;'>AI-Powered E-commerce Analytics</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #111827;'>NEBULA</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #6B7280;'>AI-Powered E-commerce Analytics</p>", unsafe_allow_html=True)
         st.markdown("---")
         menu = st.radio("Navigation", 
                         ["🌟 Dashboard Overview", 
@@ -202,18 +197,18 @@ def main():
             # resample('ME') for month end to avoid warning in pandas 2.2+
             trend = df.set_index('t_dat')['price'].resample(sales_freq).sum().reset_index()
             fig = px.area(trend, x='t_dat', y='price', 
-                          template="plotly_dark", 
-                          color_discrete_sequence=['#6366f1'])
+                          template="plotly_white", 
+                          color_discrete_sequence=['#4F46E5'])
             fig.update_layout(xaxis_title="Date", yaxis_title="Revenue ($)",
-                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                              paper_bgcolor="white", plot_bgcolor="white")
             st.plotly_chart(fig, use_container_width=True)
             
         with c2:
             st.subheader("🛍️ Top Product Groups")
             top_arts = df['product_group_name'].value_counts().head(7).reset_index()
             fig_bar = px.bar(top_arts, x='count', y='product_group_name', orientation='h',
-                             template="plotly_dark", color='count', color_continuous_scale='Viridis')
-            fig_bar.update_layout(showlegend=False, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                             template="plotly_white", color='count', color_continuous_scale='Blues')
+            fig_bar.update_layout(showlegend=False, paper_bgcolor="white", plot_bgcolor="white")
             st.plotly_chart(fig_bar, use_container_width=True)
 
     elif menu == "🎯 Customer Segments":
@@ -226,27 +221,27 @@ def main():
             st.subheader("Segment Distribution")
             seg_counts = rfm_df['Segment'].value_counts().reset_index()
             fig_donut = px.pie(seg_counts, values='count', names='Segment', hole=0.7,
-                               template="plotly_dark", color_discrete_sequence=px.colors.qualitative.Pastel)
-            fig_donut.update_layout(paper_bgcolor="rgba(0,0,0,0)")
+                               template="plotly_white", color_discrete_sequence=px.colors.qualitative.Safe)
+            fig_donut.update_layout(paper_bgcolor="white")
             st.plotly_chart(fig_donut, use_container_width=True)
             
         with col2:
             st.subheader("Segment Insight Matrix")
             # Aggregated metrics for segments
-            seg_summary = rfm_df.groupby('Segment').agg({
-                'Recency': 'mean',
-                'Frequency': 'mean',
-                'Monetary': 'mean',
-                'customer_id': 'count'
-            }).rename(columns={'customer_id': 'Count'}).reset_index()
+            seg_summary = rfm_df.groupby('Segment').agg(
+                Avg_Recency=('Recency', 'mean'),
+                Avg_Frequency=('Frequency', 'mean'),
+                Avg_Monetary=('Monetary', 'mean'),
+                Customer_Count=('Recency', 'count')
+            ).reset_index()
             
-            st.dataframe(seg_summary.style.background_gradient(cmap='Blues'), use_container_width=True)
+            st.dataframe(seg_summary.style.background_gradient(cmap='Greens'), use_container_width=True)
             
         st.markdown("---")
         st.subheader("Scatter: Recency vs Monetary")
         fig_scatter = px.scatter(rfm_df, x='Recency', y='Monetary', color='Segment',
                                  size='Frequency', hover_name='Segment', log_y=True,
-                                 template="plotly_dark", opacity=0.6)
+                                 template="plotly_white", opacity=0.6)
         st.plotly_chart(fig_scatter, use_container_width=True)
 
     elif menu == "🌓 Retention Insight":
@@ -267,11 +262,11 @@ def main():
             z=retention.values,
             x=retention.columns,
             y=[str(i) for i in retention.index],
-            colorscale='Magma',
+            colorscale='Blues',
             text=np.round(retention.values, 2),
             texttemplate="%{text}"
         ))
-        fig_heat.update_layout(template="plotly_dark", xaxis_title="Months Passed")
+        fig_heat.update_layout(template="plotly_white", xaxis_title="Months Passed")
         st.plotly_chart(fig_heat, use_container_width=True)
         
         st.info("💡 첫 구매 이후 N개월 뒤에도 다시 구매한 고객의 비율을 보여줍니다.")
@@ -294,11 +289,11 @@ def main():
             c1, c2 = st.columns(2)
             with c1:
                 st.subheader("Probability of being 'Alive'")
-                fig_alive = px.histogram(summary, x='prob_alive', nbins=50, template="plotly_dark", color_discrete_sequence=['#00ffcc'])
+                fig_alive = px.histogram(summary, x='prob_alive', nbins=50, template="plotly_white", color_discrete_sequence=['#4F46E5'])
                 st.plotly_chart(fig_alive)
             with c2:
                 st.subheader("Predicted Purchases (Next 30 Days)")
-                fig_pred = px.histogram(summary, x='pred_purc', nbins=50, template="plotly_dark", color_discrete_sequence=['#ff00ff'])
+                fig_pred = px.histogram(summary, x='pred_purc', nbins=50, template="plotly_white", color_discrete_sequence=['#06B6D4'])
                 st.plotly_chart(fig_pred)
                 
             st.subheader("Top High-Value Potential Customers")
